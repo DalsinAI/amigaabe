@@ -103,6 +103,11 @@ main(int argc, char *argv[])
 #if defined(__APPLE__) || defined(__MACH_O__)
   mainstruct.full_screen = 0;
 #endif
+#ifdef __amigaos__
+  /* a window on the Workbench; there is no switch for the full screen,
+     upstream's default, here (--window is the default) */
+  mainstruct.full_screen = 0;
+#endif
 
   w = 640;
   h = 480;

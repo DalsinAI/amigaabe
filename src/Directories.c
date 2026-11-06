@@ -7,7 +7,10 @@ getHomeUserAbe()
 {
 
   static char path[PATH_SIZE];
-#ifndef WIN32
+#if defined(__amigaos__)
+  /* the saved games and the images' scratch file in the drawer's user/ */
+  sprintf(path, "PROGDIR:user" PATH_SEP);
+#elif !defined(WIN32)
   struct passwd *pwent;
 
   pwent = getpwuid(getuid());

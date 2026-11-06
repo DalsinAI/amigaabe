@@ -1,0 +1,93 @@
+# Abe's Amazing Adventure 1.1 for AmigaOS 3.x, 68040/68060 + FPU, on
+# OpenGPU's SDL 1.2 (sdl12-compat).
+#
+#   make -f amiga/Makefile.amigaos -j2 dist \
+#        STOVE=/path/to/openamigagcc-16.2.0-open4 \
+#        NDK=/path/to/OpenNDK/Include_H SDLKIT=/path/to/opengpu-sdk
+#
+# src/Makefile.am's abe, its data (images.tar, maps, sounds) in
+# the program's drawer (BASE_DIR=PROGDIR:). SDLKIT is the OpenGPU developer
+# kit: libSDL.a, sdl12-compat on SDL2.module. It has no SDL_mixer 1.2: the
+# Team's amiga/sdl_mixer_lite.c (WAV, and now Ogg Vorbis music through
+# stb_vorbis, amiga/stb_vorbis.c; libmikmod 3.3.16 comes with it,
+# amiga/libmikmod) stands in. amiga/amiga_paths.c folds the "PROGDIR:/"
+# in the joined file names (-Wl,--wrap=fopen and the others);
+# amiga/amiga_rwops.c makes the maps' and saves' RWops plain stdio.
+
+STOVE   ?= $(HOME)/CradleLab/toolchain/openamigagcc-16.2.0-open4-x86_64-linux
+NDK     ?= $(HOME)/CradleLab/gfopensdk/OpenNDK/Include_H
+SDLKIT  ?= /mnt/amigachrome/team2/deps/opengpu-sdk
+CC      = $(STOVE)/bin/m68k-amigaos-gcc
+STRIP   = $(STOVE)/bin/m68k-amigaos-strip
+CPU     ?= -m68040 -m68881
+# -fno-tree-loop-distribute-patterns: GCC 16's loop miscompile (the kit's
+# sdl2-config gives it for GCC 16 too).
+OPT     ?= -O2 -fomit-frame-pointer -fno-tree-loop-distribute-patterns
+
+BUILD   = build/amigaos
+OBJDIR  = $(BUILD)/obj
+PROG    = Abe
+OUT     = dist/Abe
+
+DEFS    = -D__amigaos__ -DNDEBUG -DBASE_DIR=PROGDIR: -DVERSION=\"1.1\"
+INC     = -Iamiga/include -Iamiga/include/SDL -I$(SDLKIT)/include/SDL -I$(SDLKIT)/include
+CFLAGS  = -noixemul $(OPT) $(CPU) -fno-common -MMD -MP -std=gnu99 -w
+LDFLAGS = -noixemul $(CPU) -Wl,--wrap=fopen -Wl,--wrap=open -Wl,--wrap=opendir \
+          -Wl,--wrap=stat -Wl,--wrap=mkdir -Wl,--wrap=chdir \
+          -Wl,--wrap=SDL_RWFromFP -Wl,--wrap=SDL_RWFromFile
+LIBS    = -L$(SDLKIT)/lib -lSDL -lpthread -lm
+
+SRC     = $(addprefix src/,Directories.c Editor.c Font.c Game.c Icons.c Image.c Main.c Map.c \
+            MapIO.c Menu.c Monster.c Sound.c Splash.c Trans.c Util.c)
+CSRC    = amiga/stack.c amiga/sdl_mixer_lite.c amiga/stb_vorbis_impl.c amiga/amiga_paths.c \
+          amiga/amiga_rwops.c
+MIKMOD_SRC = $(wildcard amiga/libmikmod/*.c)
+MIKMOD_CFLAGS = -noixemul -O2 $(CPU) -fno-common -MMD -MP -std=gnu99 -w -DMIKMOD_BUILD \
+          -DMIKMOD_STATIC -DHAVE_LIMITS_H -DHAVE_SNPRINTF -DHAVE_UNISTD_H -DWORDS_BIGENDIAN=1 \
+          -DNO_DEPACKERS -DNO_HQMIXER -Iamiga/libmikmod -I$(NDK)
+
+OBJS    = $(SRC:%.c=$(OBJDIR)/%.o) $(CSRC:%.c=$(OBJDIR)/%.o) $(MIKMOD_SRC:%.c=$(OBJDIR)/%.o)
+ICONS   = $(wildcard amiga/icons/*.info)
+
+all: $(BUILD)/$(PROG)
+
+$(BUILD)/$(PROG): $(OBJS)
+	$(CC) $(LDFLAGS) -o $@.debug $(OBJS) $(LIBS)
+	$(STRIP) -o $@ $@.debug
+
+$(OBJDIR)/amiga/libmikmod/%.o: amiga/libmikmod/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(MIKMOD_CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/amiga/%.o: amiga/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -Iamiga -Iamiga/include/SDL -Iamiga/libmikmod -I$(SDLKIT)/include/SDL \
+	  -I$(NDK) -DMIKMOD_STATIC -c -o $@ $<
+
+$(OBJDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(DEFS) $(INC) -c -o $@ $<
+
+# The drawer: the program; images (images.tar), maps and sounds as upstream
+# lays them out; ReadMe, upstream's README and the licence. The saved
+# games and the images' scratch file are kept in user/.
+dist: $(BUILD)/$(PROG) $(ICONS) AMIGA_PORT.md
+	rm -rf $(OUT) && mkdir -p $(OUT)/images $(OUT)/maps $(OUT)/sounds $(OUT)/user
+	cp $(BUILD)/$(PROG) $(OUT)/
+	cp images/images.tar $(OUT)/images/
+	cp maps/*.dat $(OUT)/maps/
+	cp sounds/*.wav sounds/*.ogg $(OUT)/sounds/
+	cp AMIGA_PORT.md $(OUT)/ReadMe
+	cp README $(OUT)/ReadMe-upstream
+	cp COPYING $(OUT)/COPYING.txt
+	cp amiga/libmikmod/COPYING.LIB $(OUT)/COPYING-libmikmod.txt
+	cp amiga/icons/Abe.info amiga/icons/ReadMe.info $(OUT)/
+	for f in ReadMe-upstream COPYING.txt COPYING-libmikmod.txt; do cp amiga/icons/ReadMe.info $(OUT)/$$f.info; done
+	cp amiga/icons/Abe-drawer.info dist/Abe.info
+
+-include $(OBJS:.o=.d)
+
+clean:
+	rm -rf $(BUILD)
+
+.PHONY: all clean dist
