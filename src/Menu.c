@@ -21,6 +21,7 @@ SettingEntry entries[] = {
   {"audio", 0, {""}, 0},
   {"sound", 2, {"on", "off"}, 0},
   {"music", 2, {"on", "off"}, 0},
+  {"", 0, {""}, 0}, // truncates the menu here
   {"video", 0, {""}, 0},
   {"full screen", 2, {"on", "off"}, 0},
   {"background", 2, {"on", "off"}, 0},

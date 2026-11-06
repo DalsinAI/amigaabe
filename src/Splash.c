@@ -40,6 +40,7 @@ splashMainLoop(SDL_Event * event)
       if(menu_y < 0)
         menu_y = FONT_HEIGHT * (GOD_MODE ? 4 : 3);
       break;
+    case SDLK_KP_ENTER:
     case SDLK_RETURN:
     case SDLK_SPACE:
       map.quit = 1;

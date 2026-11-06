@@ -99,6 +99,7 @@ selectIcon()
           icon_selection = -1;
           goto escape;
         case SDLK_SPACE:
+        case SDLK_KP_ENTER:
         case SDLK_RETURN:
           goto escape;
         case SDLK_LEFT:

@@ -20,6 +20,7 @@
 
 #define SPRING_JUMP 30
 
+#define MAX_LIVES 5
 #define MAX_HEALTH 100
 
 // don't hold more than these... mainly b/c the gui can't handle it

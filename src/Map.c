@@ -945,7 +945,7 @@ moveMap()
         drawMap();              // this calls finishDrawMap
       } else {
         // update the screen
-        finishDrawMap(!map.redraw);
+        finishDrawMap();
       }
 
       // uncomment to test slow machine game speed
