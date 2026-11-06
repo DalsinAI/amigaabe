@@ -17,7 +17,9 @@ Status: plays in the lab (Instance-45 on GFOpenUp 0.8.19, 6 November
 Start Game, Abe walking and jumping through the first rooms (the arrow trap,
 the score, a life lost), Escape to the title, and Exit back to the Shell,
 the intro and game music decoded all the while. The lab is muted, so the
-music and sounds were not heard there.
+music and sounds were not heard there. Screenshots from that run are in
+amiga/screenshots: the title (abe-title.png), the first room
+(abe-first-room.png) and the arrow trap (abe-arrow-trap.png).
 
 
 What you need
