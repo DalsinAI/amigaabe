@@ -84,7 +84,9 @@ int
 main(int argc, char *argv[])
 {
   Uint32 flags = SDL_DOUBLEBUF;
-  int i;
+  int i, j;
+  static int available_resolution_width [] = { 320, 320, 640, 640, 800, 1024, 1280, 1600, 1280, 1280, 1440, 1400, 0 };
+  static int available_resolution_height[] = { 200, 240, 400, 480, 600,  768, 1024, 1200,  768,  800,  900, 1050, 0 };
   int w, h, bpp, n;
   int hw_mem = 1;
   int intro = 0;
@@ -101,6 +103,11 @@ main(int argc, char *argv[])
 #if defined(__APPLE__) || defined(__MACH_O__)
   mainstruct.full_screen = 0;
 #endif
+#ifdef __amigaos__
+  /* a window on the Workbench; there is no switch for the full screen,
+     upstream's default, here (--window is the default) */
+  mainstruct.full_screen = 0;
+#endif
 
   w = 640;
   h = 480;
@@ -112,6 +119,16 @@ main(int argc, char *argv[])
   }
 
   atexit(SDL_Quit);
+
+  SDL_VideoInfo *vid_info;
+  vid_info = (SDL_VideoInfo*) SDL_GetVideoInfo ();
+  if( vid_info )
+    if( vid_info->current_w == 1440 && vid_info->current_h ==900
+    ||  vid_info->current_w == 1400 && vid_info->current_h ==1050 )
+    {
+      w = vid_info->current_w;
+      h = vid_info->current_h;
+    }
 
   for(i = 0; i < argc; i++) {
     if(!strcmp(argv[i], "--window")) {
@@ -129,43 +146,13 @@ main(int argc, char *argv[])
       runmode = RUNMODE_GAME;
     } else if(!strcmp(argv[i], "--size") && i < argc - 1) {
       n = atoi(argv[i + 1]);
-      switch (n) {
-      case 0:
-        w = 320;
-        h = 200;
-        break;
-      case 1:
-        w = 320;
-        h = 240;
-        break;
-      case 2:
-        w = 640;
-        h = 400;
-        break;
-      case 3:
-        w = 640;
-        h = 480;
-        break;
-      case 4:
-        w = 800;
-        h = 600;
-        break;
-      case 5:
-        w = 1024;
-        h = 768;
-        break;
-      case 6:
-        w = 1280;
-        h = 1024;
-        break;
-      case 7:
-        w = 1600;
-        h = 1200;
-        break;
-      default:
-        w = 640;
-        h = 480;
-      }
+      for( j = 0 ; available_resolution_width[j] != 0 ; j++ )
+        if( j == n )
+        {
+          w = available_resolution_width[j];
+          h = available_resolution_height[j];
+          break;
+        }
     } else if((!strcmp(argv[i], "--bpp") || !strcmp(argv[i], "-b"))
               && i < argc - 1) {
       n = atoi(argv[i + 1]);
@@ -191,7 +178,11 @@ main(int argc, char *argv[])
       printf
         ("--size #           Use this width/height for the video mode.\n");
       printf
-        ("\tModes: 0-320/200 1-320/240 2-640/400 3-640/480 4-800/600 5-1024/768 6-1280/1024 7-1600/1200\n");
+        ("\tModes:\n");
+      for( j = 0 ; available_resolution_width[j] != 0 ; j++ )
+        printf( "\t  %2d: %4d/%4d (%1.2f)\n", j,
+          available_resolution_width[j], available_resolution_height[j],
+          (float)available_resolution_width[j] / (float)available_resolution_height[j] );
       printf("-b --bpp #         Use this bpp for the video mode.\n");
       printf("--nosound          Don't use sound.\n");
       printf("-? -h --help       Show this help message.\n");

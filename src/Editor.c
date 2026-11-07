@@ -298,6 +298,7 @@ editorMainLoop(SDL_Event * event)
       cursor.dir = DIR_NONE;
       map.redraw = 1;
       break;
+    case SDLK_KP_ENTER:
     case SDLK_RETURN:
       setImage(edit_panel.level, edit_panel.image_index);
       break;

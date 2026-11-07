@@ -3,6 +3,7 @@
 #include <string.h>
 
 Game game;
+static int cheat = 0; // 0=no, 1=yes
 
 // path_sprintf should not be used by other .c files, as it does not fit for them.
 static void
@@ -18,9 +19,9 @@ path_sprintf(char *path, char *formatted_name, int version)
   len = strlen(path);
 
   if(1 == version) {
-    sprintf(path + len, formatted_name);
+    sprintf(path + len, "%s", formatted_name);
   } else {
-    sprintf(path + len, formatted_name, version);
+    sprintf(path + len, "%s", formatted_name, version);
   }
 
 }
@@ -381,15 +382,28 @@ gameMainLoop(SDL_Event * event)
     case SDLK_d:
       debugMonsters();
       break;
+    case SDLK_c:
+      if( event->key.keysym.mod & ( KMOD_CTRL | KMOD_SHIFT | KMOD_ALT ) && getenv( "ABE_IS_CHEATING" ) )
+        cheat = 1 - cheat;
+      if( cheat )
+      {
+        game.lives = MAX_LIVES;
+        game.keys = MAX_KEYS;
+        game.balloons = MAX_BALLOONS;
+        game.health = MAX_HEALTH;
+      }
+      break;
 #if GOD_MODE
     case SDLK_k:
       game.keys++;
       break;
 #endif
+    case SDLK_KP_ENTER:
     case SDLK_RETURN:
       if(!game.end_game) {
         if(!game.balloonTimer && game.balloons) {
           playSound(BUBBLE_SOUND);
+          if( ! cheat )
           game.balloons--;
           game.balloonTimer = BALLOON_RIDE_INTERVAL;
           map.gravity = 0;
@@ -456,9 +470,11 @@ handleDeath(LiveMonster * live)
 
   if(live) {
     showMapStatus(live->monster->name);
+    if( ! cheat )
     game.health -= (live->monster->damage * (game.difficoulty + 1));
   } else {
     showMapStatus("drowning!");
+    if( ! cheat )
     game.health--;              // water damage
     show_effect = !(game.tick % 40);
   }
@@ -489,6 +505,7 @@ handleDeath(LiveMonster * live)
   if(game.god_mode)
     return;
 
+  if( ! cheat )
   game.lives--;
 
   // Flash player. Don't move monsters during this.
@@ -691,6 +708,7 @@ detectCollision(int dir)
         EMPTY_MAP;
       map.image_index[LEVEL_FORE][key.pos_x + (key.pos_y * map.w)] =
         img_door2;
+      if( ! cheat )
       game.keys--;
       map.redraw = 1;
       // always return 0 (block) so we don't fall into a door and get stuck there... (was a nasty bug)
@@ -771,7 +789,7 @@ runMap()
       game.player_start_y = 28;
     }
 
-    game.lives = 5;
+    game.lives = MAX_LIVES;
     game.score = 0;
     game.keys = 0;
     game.balloons = 0;
