@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs>
+<linearGradient id="py" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f4d888"/><stop offset=".5" stop-color="#d0a040"/><stop offset=".5" stop-color="#9a6c20"/><stop offset="1" stop-color="#6a4410"/></linearGradient>
+<radialGradient id="hat" cx=".4" cy=".3" r=".8"><stop offset="0" stop-color="#fff4d8"/><stop offset=".5" stop-color="#d8c090"/><stop offset="1" stop-color="#7a6034"/></radialGradient></defs>
+<path d="M2 60 L32 14 L62 60 Z" fill="url(#py)" stroke="#101418" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M14 42 L50 42 M20 51 L44 51 M24 33 L40 33" stroke="#7a5418" stroke-width="1"/>
+<path d="M28 60 L28 52 Q32 47 36 52 L36 60 Z" fill="#1a1006" stroke="#101418" stroke-width="1.5" stroke-linejoin="round"/>
+<ellipse cx="32" cy="22" rx="22" ry="6" fill="url(#hat)" stroke="#101418" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M16 21 Q16 4 32 4 Q48 4 48 21 Q32 26 16 21 Z" fill="url(#hat)" stroke="#101418" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M17 18 Q32 23 47 18" stroke="#6a3a14" stroke-width="3" fill="none"/>
+<path d="M22 10 Q26 6 32 6" stroke="#fff" stroke-width="1.5" fill="none" opacity=".7"/>
+</svg>
