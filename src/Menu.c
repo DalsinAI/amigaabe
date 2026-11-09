@@ -271,6 +271,11 @@ showSettings()
     paintScreen();
 
     while(SDL_PollEvent(&event)) {
+#ifdef __amigaos__
+      /* Right Amiga + Q and the close gadget (SDL_QUIT): leave the game */
+      if(event.type == SDL_QUIT)
+        exit(0);
+#endif
       switch (event.type) {
       case SDL_KEYDOWN:
         switch (event.key.keysym.sym) {
@@ -321,6 +326,11 @@ showAbout()
   while(1) {
     paintAboutScreen();
     while(SDL_PollEvent(&event)) {
+#ifdef __amigaos__
+      /* Right Amiga + Q and the close gadget (SDL_QUIT): leave the game */
+      if(event.type == SDL_QUIT)
+        exit(0);
+#endif
       if(event.type == SDL_KEYDOWN)
         goto escape;
     }
